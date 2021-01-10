@@ -293,6 +293,11 @@ func TestOperationPrecedence(t *testing.T) {
 		{"false", "false"},
 		{"3 > 5 == false", "((3 > 5) == false)"},
 		{"3 < 5 == true", "((3 < 5) == true)"},
+		{"1 + (2 + 3) + 4", "((1 + (2 + 3)) + 4)"},
+		{"(2 + 7) * 2", "((2 + 7) * 2)"},
+		{"1 / (6 + 6)", "(1 / (6 + 6))"},
+		{"-(4 + 7)", "(-(4 + 7))"},
+		{"!(!true != true)", "(!((!true) != true))"},
 	}
 
 	for _, tt := range tests {
