@@ -207,7 +207,7 @@ func TestPrefixExpressions(t *testing.T) {
 	}
 }
 
-func TestInfixExpress(t *testing.T) {
+func TestInfixExpressions(t *testing.T) {
 	InfixTests := []struct {
 		input      string
 		leftValue  int64
@@ -248,6 +248,29 @@ func TestInfixExpress(t *testing.T) {
 	}
 }
 
+func testInfixExpression(t *testing.T, exp ast.Expression, left interface{},
+	operator string, right interface{}) bool {
+	opExp, ok := exp.(*ast.InfixExpression)
+	if !ok {
+		t.Errorf("exp is not ast.InfixExpression. got %T(%s)", exp, exp)
+		return false
+	}
+
+	if !testLiteralExpression(t, opExp.Left, left) {
+		return false
+	}
+
+	if opExp.Operator != operator {
+		t.Errorf("exp Operator is not '%s'. got %q", operator, opExp.Operator)
+	}
+
+	if !testLiteralExpression(t, opExp.Right, right) {
+		return false
+	}
+
+	return true
+}
+
 func TestOperationPrecedence(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -275,27 +298,37 @@ func TestOperationPrecedence(t *testing.T) {
 	}
 }
 
-func testInfixExpression(t *testing.T, exp ast.Expression, left interface{},
-	operator string, right interface{}) bool {
-	opExp, ok := exp.(*ast.InfixExpression)
+func TestBooleanExpression(t *testing.T) {
+	input := "true;"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("expected 1 statement. got %d",
+			len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
 	if !ok {
-		t.Errorf("exp is not ast.InfixExpression. got %T(%s)", exp, exp)
-		return false
+		t.Fatalf(
+			"program.Statements[0] is not ast.ExpressionsStatement. got %T",
+			program.Statements[0])
 	}
 
-	if !testLiteralExpression(t, opExp.Left, left) {
-		return false
+	b, ok := stmt.Expression.(*ast.Boolean)
+	if !ok {
+		t.Fatalf("exp not *ast.Boolean. got %s", stmt.Expression)
 	}
 
-	if opExp.Operator != operator {
-		t.Errorf("exp Operator is not '%s'. got %q", operator, opExp.Operator)
+	if b.Value != true {
+		t.Errorf("b.Value not %t. got %t", true, b.Value)
 	}
 
-	if !testLiteralExpression(t, opExp.Right, right) {
-		return false
+	if b.TokenLiteral() != "true" {
+		t.Errorf("b.TokenLiteral not %s. got %s", "true", b.TokenLiteral())
 	}
-
-	return true
 }
 
 func testLiteralExpression(t *testing.T, exp ast.Expression, expected interface{}) bool {
