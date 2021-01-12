@@ -507,7 +507,6 @@ func TestFunctionParameters(t *testing.T) {
 		{input: `fn (x) { };`, expectedParameters: []string{"x"}},
 		{input: `fn (x, y, z) { };`, expectedParameters: []string{"x", "y", "z"}},
 	}
-
 	for _, tt := range tests {
 		l := lexer.New(tt.input)
 		p := New(l)
@@ -527,6 +526,75 @@ func TestFunctionParameters(t *testing.T) {
 		}
 	}
 }
+
+func TestCallExpression(t *testing.T) {
+	input := `add(1, 2, 3 + 5, 3 / 5)`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("expected 1 statement. got %d",
+			len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf(
+			"program.Statements[0] is not ast.ExpressionsStatement. got %T",
+			program.Statements[0])
+	}
+
+	ce, ok := stmt.Expression.(*ast.CallExpression)
+	if !ok {
+		t.Fatalf("exp not *ast.CallExpression. got %T", stmt.Expression)
+	}
+
+	if !testIdentifier(t, ce.Function, "add") {
+		return
+	}
+
+	if len(ce.Arguments) != 4 {
+		t.Fatalf("length of ce.Arguments is not 4. got %d.", len(ce.Arguments))
+	}
+
+	testLiteralExpression(t, ce.Arguments[0], 1)
+	testLiteralExpression(t, ce.Arguments[1], 2)
+	testInfixExpression(t, ce.Arguments[2], 3, "+", 5)
+	testInfixExpression(t, ce.Arguments[3], 3, "/", 5)
+}
+
+func TestCallArguments(t *testing.T) {
+	tests := []struct{
+		input string
+		expectedArgments []string
+	} {
+		{input: `add();`, expectedArgments: []string{}},
+		{input: `min(x);`, expectedArgments: []string{"x"}},
+		{input: `max(x, y, z);`, expectedArgments: []string{"x", "y", "z"}},
+	}
+	for _, tt := range tests {
+		l := lexer.New(tt.input)
+		p := New(l)
+		program := p.ParseProgram()
+		checkParserErrors(t, p)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+		call := stmt.Expression.(*ast.CallExpression)
+
+		if len(call.Arguments) != len(tt.expectedArgments) {
+			t.Errorf("length of parameters is not %d. got %d",
+				len(tt.expectedArgments), len(call.Arguments))
+		}
+
+		for i, ident := range tt.expectedArgments {
+			testLiteralExpression(t, call.Arguments[i], ident)
+		}
+	}
+}
+
 
 func testLiteralExpression(t *testing.T, exp ast.Expression, expected interface{}) bool {
 	switch v := expected.(type) {
