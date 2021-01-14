@@ -2,15 +2,23 @@
 
 Go言語で作るインタプリタ
 
-- [x] 字句解析器
-- [x] 構文解析器
-- [ ] 抽象構文木
-- [ ] 内部オブジェクトシステム
-- [ ] 評価器
+## Getting Started
 
 ```sh
-go run main.go
+$ go run main.go
+Hello atrn0!! This is Monkey REPL!
+>> 3 + 4
+7
+>> 78 - 39 == 78 / 2
+true
+>> 888 == 39
+false
+>> (true == false) != (4 < 100)
+true
+>> (120 + 433) * 320
+176960
 ```
+
 
 ## Test
 
