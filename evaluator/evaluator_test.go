@@ -93,10 +93,10 @@ func TestBangOperator(t *testing.T) {
 		input    string
 		expected bool
 	}{
-		{"!ture", false},
+		{"!true", false},
 		{"!false", true},
 		{"!5", false},
-		{"!!ture", true},
+		{"!!true", true},
 		{"!!false", false},
 		{"!!5", true},
 	}
@@ -166,6 +166,22 @@ if (10 > 1) {
 	}
 }
 
+func TestLetStatements(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int64
+	}{
+		{"let a = 5; a;", 5},
+		{"let a = 5 * 5; a;", 25},
+		{"let a = 5; let b = a; b;", 5},
+		{"let a = 5; let b = a; let c = a + b + 5; c;", 15},
+	}
+
+	for _, tt := range tests {
+		testIntegerObject(t, testEval(tt.input), tt.expected)
+	}
+}
+
 func TestErrorHandling(t *testing.T) {
 	tests := []struct {
 		input       string
@@ -188,6 +204,7 @@ if (10 > 1) {
 	return true + 5;
 }
 `, "unknown operator: BOOLEAN + BOOLEAN"},
+		{"foobar", "identifier not found: foobar"},
 	}
 
 	for _, tt := range tests {
@@ -205,9 +222,10 @@ if (10 > 1) {
 }
 
 func testEval(input string) object.Object {
+	env := object.NewEnvironment()
 	l := lexer.New(input)
 	p := parser.New(l)
 	program := p.ParseProgram()
 
-	return Eval(program)
+	return Eval(program, env)
 }
