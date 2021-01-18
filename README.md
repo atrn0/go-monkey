@@ -17,6 +17,15 @@ false
 true
 >> (120 + 433) * 320
 176960
+>> if (1 > 2) { 1 + 2 } else { 1 - 2 }
+-1
+>> let add = fn(x, y) { x + y }
+>> let sub = fn(x, y) { x - y }
+>> let apply = fn(x, y, func) { func(x, y) }
+>> apply(3, 4, add)
+7
+>> apply(10, 5, sub)
+5
 ```
 
 
