@@ -262,6 +262,18 @@ func TestFunctionApplication(t *testing.T) {
 	}
 }
 
+func TestClosures(t *testing.T) {
+	input := `
+let newAddr = fn(x) {
+	fn(y) {x + y}
+}
+let addTwo = newAddr(2)
+addTwo(3)
+`
+
+	testIntegerObject(t, testEval(input), 5)
+}
+
 func testEval(input string) object.Object {
 	env := object.NewEnvironment()
 	l := lexer.New(input)
